@@ -1,0 +1,12 @@
+{
+  "name": "tor-downloader",
+  "version": "1.0.0",
+  "description": "Torrent downloading on hosted VMs",
+  "main": "main.js",
+  "repository": "https://github.com/uinstinct/tor-downloader",
+  "author": "Instinct <61635505+uinstinct@users.noreply.github.com>",
+  "license": "MIT",
+  "dependencies": {
+    "webtorrent": "^1.9.4"
+  }
+}
