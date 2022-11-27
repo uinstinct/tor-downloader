@@ -7,6 +7,9 @@
   "author": "Instinct <61635505+uinstinct@users.noreply.github.com>",
   "license": "MIT",
   "type": "module",
+  "scripts": {
+    "start": "node main.js"
+  },
   "dependencies": {
     "cli-progress": "^3.11.2",
     "webtorrent": "^1.9.4"
