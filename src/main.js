@@ -8,6 +8,10 @@ import getDriveClient from './upload-to-drive.js';
 
 const client = new WebTorrent();
 
+/**
+ * @param {string} maglink 
+ * @returns {Promise<string|null>}
+ */
 async function startDownloadingMagnetLink(maglink) {
     return new Promise((resolve, reject) => {
         console.log('downloading --> ', maglink, '\n');
@@ -58,11 +62,9 @@ async function uploadContentsInFolder(driveClient, filePath, parentFolderId) {
     for (const dirent of dirents) { // upload files/folders one by one
         const currentFilePath = filePath + '/' + dirent.name;
         if (dirent.isDirectory()) {
-            console.log('was directory', dirent.name);
             const { id: currentFolderId } = await driveClient.createFolder(dirent.name, parentFolderId);
             await uploadContentsInFolder(driveClient, currentFilePath, currentFolderId);
         } else {
-            console.log('was file', dirent.name);
             await driveClient.saveFile(dirent.name, currentFilePath, mime.contentType(dirent.name), parentFolderId);
         }
     };
@@ -71,7 +73,7 @@ async function uploadContentsInFolder(driveClient, filePath, parentFolderId) {
 async function main() {
     console.log('Initializing drive client ...');
     const driveClient = getDriveClient();
-    console.log('Checking if gdrive folder is present?')
+    console.log('Checking if gdrive folder is present?');
     let folder = await driveClient.searchFolder();
     if (!folder) {
         console.log('Creating download folder on drive >');
@@ -83,11 +85,7 @@ async function main() {
 
     const magnetLinks = fs.readFileSync('./magnets.txt')?.toString().split('\n') || [];
 
-    // const torrentName = await startDownloadingMagnetLink(magnetLinks.at(0));
-    // if (!torrentName) {
-    //     console.log('torrent could not be downloaded');
-    //     return ;
-    // }
+    await startDownloadingMagnetLink(magnetLinks.at(0));
 
     await uploadContentsInFolder(driveClient, DOWNLOADS_FOLDER, folder.id);
 

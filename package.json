@@ -8,13 +8,12 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "node src/main.js",
-    "rm": "node src/clear-downloads-folder.js",
-    "gdrive": "node src/upload-to-drive.js"
+    "start": "node src/main.js"
   },
   "dependencies": {
     "@google-cloud/local-auth": "2.1.0",
     "cli-progress": "^3.11.2",
+    "dotenv": "^16.0.3",
     "googleapis": "^105",
     "mime-types": "^2.1.35",
     "webtorrent": "^1.9.4"
