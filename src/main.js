@@ -1,10 +1,12 @@
 import WebTorrent from 'webtorrent';
 import fs from 'fs';
 import mime from 'mime-types';
+import Enquirer from 'enquirer';
 
 import { bar1, bar2, convertMbps } from './utils.js';
 import { DOWNLOADS_FOLDER, PROGRESS_BAR_INTERVAL, PROGRESS_BAR_SWITCH_TIME } from './constants.js'
 import getDriveClient from './upload-to-drive.js';
+import clearDownloadsFolder from './clear-downloads-folder.js';
 
 const client = new WebTorrent();
 
@@ -71,25 +73,65 @@ async function uploadContentsInFolder(driveClient, filePath, parentFolderId) {
 }
 
 async function main() {
-    console.log('Initializing drive client ...');
-    const driveClient = getDriveClient();
-    console.log('Checking if gdrive folder is present?');
-    let folder = await driveClient.searchFolder();
-    if (!folder) {
-        console.log('Creating download folder on drive >');
-        folder = await driveClient.createFolder();
-    } else {
-        console.log('Download Folder present on drive!');
+    const enquirer = new Enquirer();
+
+    while (true) {
+        const response = await enquirer.prompt({
+            type: 'select',
+            name: 'operation',
+            message: 'What to do?',
+            choices: [
+                {
+                    name: 1,
+                    message: 'Get torrent files from magnets.txt',
+                },
+                {
+                    name: 2,
+                    message: 'Upload contents of torrent downloads folder to GDrive',
+                },
+                {
+                    name: 3,
+                    message: 'Clear the contents of the local torrent downloads folder',
+                },
+                {
+                    name: 4,
+                    message: 'Exit the program',
+                }
+            ]
+        });
+
+        switch (response.operation) {
+            case 1: {
+                const magnetLinks = fs.readFileSync('./magnets.txt')?.toString().split('\n') || [];
+                await startDownloadingMagnetLink(magnetLinks.at(0));
+                break;
+            };
+            case 2: {
+                console.log('Initializing drive client ...');
+                const driveClient = getDriveClient();
+                console.log('Checking if gdrive folder is present?');
+                let folder = await driveClient.searchFolder();
+                if (!folder) {
+                    console.log('Creating download folder on drive >');
+                    folder = await driveClient.createFolder();
+                } else {
+                    console.log('Download Folder present on drive!');
+                }
+                console.log(`Folder Details :: ID: ${folder.id} | Name: ${folder.name}`);
+
+                await uploadContentsInFolder(driveClient, DOWNLOADS_FOLDER, folder.id);
+                break;
+            };
+            case 3: {
+                clearDownloadsFolder();
+                break;
+            };
+            case 4:
+            default: {
+                process.exit(0);
+            }
+        }
     }
-    console.log(`Folder Details :: ID: ${folder.id} | Name: ${folder.name}`);
-
-    const magnetLinks = fs.readFileSync('./magnets.txt')?.toString().split('\n') || [];
-
-    await startDownloadingMagnetLink(magnetLinks.at(0));
-
-    await uploadContentsInFolder(driveClient, DOWNLOADS_FOLDER, folder.id);
-
-    process.exit(0);
 }
 
 main();
